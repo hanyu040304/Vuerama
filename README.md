@@ -4,10 +4,54 @@
 > 产品名称：Vuerama  
 > 中文副标题：专业全景空间播放器  
 > 英文副标题：Pro Immersive 360 Viewer  
-> 版本：0.2  
+> 版本：0.3
 > 日期：2026-08-17  
-> 状态：需求基线，等待厂商 SDK 可行性验证  
+> 状态：2:1 全景照片 Demo 已进入实现验证；私有格式仍等待厂商 SDK
 > 首发策略：先个人使用，再准备公开上架
+
+## 当前可运行 Demo
+
+仓库现已包含第一阶段 visionOS Demo，范围刻意限定为已经拼接好的 2:1 等距柱状全景照片，不依赖 Insta360 或 DJI SDK。
+
+已实现：
+
+- 从系统“文件”选择 JPEG、PNG、HEIC 等系统可解码图片。
+- 使用 ImageIO 读取像素尺寸，并拒绝非 2:1 图片。
+- 在全沉浸 `ImmersiveSpace` 中把图片作为无光照纹理映射到内球面。
+- 用户位于球心，直接通过系统头部追踪转头环看。
+- 注视画面后捏合拖动，叠加水平和俯仰方向偏移；松手后保持方向。
+- 提供“回正”和“退出全景”两个最小控制。
+- 导入时只读取原文件，并复制到 App 缓存；不会修改原图。
+
+暂未实现：视频、INSP、INSV、OSV、相册、文件夹扫描、百度网盘、媒体库和专业画面设置。
+
+### 本地验证
+
+1. 确认安装包含 visionOS 27 SDK 和 Swift 6.4 的 Xcode 27，并执行 `sudo xcode-select -s /Applications/Xcode.app/Contents/Developer`；如果 Xcode 安装在其他位置，请替换路径。
+2. 打开 `Vuerama.xcodeproj`，在 Vuerama Target 的 Signing & Capabilities 中选择自己的 Apple Development Team。
+3. 选择 Apple Vision Pro 模拟器或已开启开发者模式的真机。
+4. 运行 App，选择一张宽度约为高度两倍的全景照片，然后点击“进入全景”。
+5. 核对照片正前方、接缝、上下极点、转头方向、捏合拖动方向和回正行为。
+
+纯 Swift 核心规则可运行：
+
+```bash
+swift test
+```
+
+无签名模拟器构建可运行：
+
+```bash
+xcodebuild \
+  -project Vuerama.xcodeproj \
+  -scheme Vuerama \
+  -sdk xrsimulator \
+  -derivedDataPath DerivedData \
+  CODE_SIGNING_ALLOWED=NO \
+  build
+```
+
+这个 Demo 不申请摄像头、麦克风、手部骨骼、世界感知或完整照片库权限。文件选择器返回的是安全作用域 URL，代码只在读取和复制期间临时访问。
 
 ## 1. 产品概述
 
